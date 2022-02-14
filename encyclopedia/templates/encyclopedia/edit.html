@@ -1,20 +1,21 @@
-{% extends "encyclopedia/layout.html" %}
+{{% extends "encyclopedia/layout.html" %}
 
 {% block title %}
-    Edit Page {{ title }}
+    Edit page
 {% endblock %}
 
 {% block body %}
+  
+    <h1 class="display-3 text-secondary">{{title}}</h1>
+    
+    <form action="{% url 'wiki:save'  %}" method="POST">
+        {% csrf_token %}          
+        
+        {{edit_form}}
+        
+        <input id = "createpage" type="submit">
+        
+    </form> 
 
-  <h1>Editing wikipedia Page "{{ title }}"</h1>
-
-  <p>Use the form below to edit the wikipedia page for "{{ title }}".</p>
-  <p>Please note that wikipedia uses <a href="https://docs.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax">Github Markdown</a> to style its pages, which is converted to HTML when entries are requested by a user.</p>
-
-  <form action="{% url 'edit' title=title %}" method="post">
-    {% csrf_token %}
-    {{ edit_form }}
-    <input class="btn btn-primary" type="submit" value="Submit">
-  </form>
 
 {% endblock %}
