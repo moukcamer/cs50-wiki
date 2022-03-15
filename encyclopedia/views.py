@@ -57,7 +57,7 @@ def random(request):
     return redirect('entry_page', entry_name=rand_entry_name)
 
 
-def new_page(request):
+def create(request):
 
     if request.method == 'POST':
         form = NewPageForm(request.POST)
@@ -74,7 +74,7 @@ def new_page(request):
 
     context = {'form': form}
 
-    return render(request, 'encyclopedia/new_page.html', context)
+    return render(request, 'encyclopedia/create.html', context)
 
 
 def edit(request, entry_name):
