@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.urls import include, path
 
@@ -21,3 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("encyclopedia.urls"))
 ]
+# Serve the static HTML
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
