@@ -1,175 +1,106 @@
+import os
 import random
-from django import forms
+import markdown2
+
 from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.urls import reverse
-from django.http import HttpResponse
-from markdown2 import Markdown
+
 from . import util
-
-class SearchForm(forms.Form):
-    """ Form Class for Search Bar """
-    title = forms.CharField(label='', widget=forms.TextInput(attrs={
-      "class": "search",
-      "placeholder": "Search wikipedia"}))
-
-class CreateForm(forms.Form):
-    """ Form Class for Creating New Entries """
-    title = forms.CharField(label='', widget=forms.TextInput(attrs={
-      "placeholder": "Page Title"}))
-    text = forms.CharField(label='', widget=forms.Textarea(attrs={
-      "placeholder": "Enter Page Content using Github Markdown"
-    }))
-
-class EditForm(forms.Form):
-  """ Form Class for Editing Entries """
-  text = forms.CharField(label='', widget=forms.Textarea(attrs={
-      "placeholder": "Enter Page Content using Github Markdown"
-    }))
+from .forms import NewPageForm, EditPageForm
 
 
 def index(request):
-    """ Home Page on Site, displays all available entries """
-    return render(request, "encyclopedia/index.html", {
-        "entries": util.list_entries(),
-        "search_form": SearchForm(),
-    })
+    """Main page."""
 
-def entry(request, title):
-    """ Displays the requested entry page, if it exists """
+    context = {
+        "entries": util.list_entries()
+    }
 
-    entry_md = util.get_entry(title)
+    return render(request, "encyclopedia/index.html", context)
 
-    if entry_md != None:
-        # Title exists, convert md to HTML and return rendered template
-        entry_HTML = Markdown().convert(entry_md)
-        return render(request, "encyclopedia/entry.html", {
-          "title": title,
-          "entry": entry_HTML,
-          "search_form": SearchForm(),
-          })
+
+def entry_page(request, entry_name):
+    """Render entry page."""
+
+    # convert markdown to html
+    ef_content = util.get_entry(entry_name)
+    if ef_content:
+        ef_content_html = markdown2.markdown(ef_content)
     else:
-        # Page does not exist, get links for similar titles:
-        related_titles = util.related_titles(title)
+        return render(request, 'encyclopedia/404.html', status=404)
 
-        return render(request, "encyclopedia/error.html", {
-          "title": title,
-          "related_titles": related_titles,
-          "search_form": SearchForm(),
-          })
+    context = {
+        'entry_title': entry_name,
+        'entry_content': ef_content_html
+    }
+    return render(request, "encyclopedia/entry.html", context)
+
 
 def search(request):
-    """ Loads requested title page if it exists, else displays search results """
+    """Search form."""
 
-    # If search page reached by submitting search form:
-    if request.method == "POST":
-        form = SearchForm(request.POST)
+    keyword = request.GET['keyword']
+    if keyword in util.list_entries():
+        return redirect('entry_page', entry_name=keyword)
+    else:
+        context = {
+            'search_results': util.search_entry(keyword)
+        }
+        return render(
+            request,
+            'encyclopedia/search_results.html',
+            context
+        )
 
-        # If form is valid try to search for title:
-        if form.is_valid():
-            title = form.cleaned_data["title"]
-            entry_md = util.get_entry(title)
 
-            print('search request: ', title)
+def random_page(request):
+    rand_entry_name = random.choice(util.list_entries())
+    return redirect('entry_page', entry_name=rand_entry_name)
 
-            if entry_md:
-                # If entry exists, redirect to entry view
-                return redirect(reverse('entry', args=[title]))
-            else:
-                # Otherwise display relevant search results
-                related_titles = util.related_titles(title)
 
-                return render(request, "encyclopedia/search.html", {
-                "title": title,
-                "related_titles": related_titles,
-                "search_form": SearchForm()
-                })
+def new_page(request):
 
-    # Otherwise form not posted or form not valid, return to index page:
-    return redirect(reverse('index'))
-
-def create(request):
-    """ Lets users create a new page on the wiki """
-
-    # If reached via link, display the form:
-    if request.method == "GET":
-        return render(request, "encyclopedia/create.html", {
-          "create_form": CreateForm(),
-          "search_form": SearchForm()
-        })
-
-    # Otherwise if reached by form submission:
-    elif request.method == "POST":
-        form = CreateForm(request.POST)
-
-        # If form is valid, process the form:
-        if form.is_valid():
-          title = form.cleaned_data['title']
-          text = form.cleaned_data['text']
-        else:
-          messages.error(request, 'Entry form not valid, please try again!')
-          return render(request, "encyclopedia/create.html", {
-            "create_form": form,
-            "search_form": SearchForm()
-          })
-
-        # Check that title does not already exist:
-        if util.get_entry(title):
-            messages.error(request, 'This page title already exists! Please go to that title page and edit it instead!')
-            return render(request, "encyclopedia/create.html", {
-              "create_form": form,
-              "search_form": SearchForm()
-            })
-        # Otherwise save new title file to disk, take user to new page:
-        else:
-            util.save_entry(title, text)
-            messages.success(request, f'New page "{title}" created successfully!')
-            return redirect(reverse('entry', args=[title]))
-
-def edit(request, title):
-    """ Lets users edit an already existing page on the wiki """
-
-    # If reached via editing link, return form with post to edit:
-    if request.method == "GET":
-        text = util.get_entry(title)
-
-        # If title does not exist, return to index with error:
-        if text == None:
-            messages.error(request, f'"{title}"" page does not exist and can\'t be edited, please create a new page instead!')
-
-        # Otherwise return pre-populated form:
-        return render(request, "encyclopedia/edit.html", {
-          "title": title,
-          "edit_form": EditForm(initial={'text':text}),
-          "search_form": SearchForm()
-        })
-
-    # If reached via posting form, updated page and redirect to page:
-    elif request.method == "POST":
-        form = EditForm(request.POST)
+    if request.method == 'POST':
+        form = NewPageForm(request.POST)
 
         if form.is_valid():
-          text = form.cleaned_data['text']
-          util.save_entry(title, text)
-          messages.success(request, f'Entry "{title}" updated successfully!')
-          return redirect(reverse('entry', args=[title]))
+            title = form.cleaned_data.get('title')
+            entry = form.cleaned_data.get('entry')
 
-        else:
-          messages.error(request, f'Editing form not valid, please try again!')
-          return render(request, "encyclopedia/edit.html", {
-            "title": title,
-            "edit_form": form,
-            "search_form": SearchForm()
-          })
+            util.save_entry(title, f'# {title}\n\n{entry}')
 
-def random_title(request):
-    """ Takes user to a random encyclopedia entry """
+            return redirect('entry_page', entry_name=title)
+    else:
+        form = NewPageForm()
 
-    # Get list of titles, pick one at random:
-    titles = util.list_entries()
-    title = random.choice(titles)
+    context = {'form': form}
 
-    # Redirect to selected page:
-    return redirect(reverse('entry', args=[title]))
+    return render(request, 'encyclopedia/new_page.html', context)
 
 
+def edit_page(request, entry_name):
+
+    if request.method == 'POST':
+        form = EditPageForm(request.POST)
+
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            entry = form.cleaned_data['entry']
+
+            os.rename(f'./entries/{entry_name}.md', f'./entries/{title}.md')
+            util.save_entry(title, f'# {title}\n\n{entry}')
+
+            return redirect('entry_page', entry_name=title)
+    else:
+        with open(f'./entries/{entry_name}.md') as ef:
+            ef_content = ef.readlines()
+
+        data = {
+            'title': entry_name,
+            'entry': ''.join(ef_content[1:])
+        }
+
+        form = EditPageForm(data)
+
+    context = {'form': form}
+
+    return render(request, 'encyclopedia/edit_page.html', context)
