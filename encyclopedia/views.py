@@ -18,7 +18,7 @@ def index(request):
     return render(request, "encyclopedia/index.html", context)
 
 
-def entry_page(request, entry_name):
+def entry(request, entry_name):
     """Render entry page."""
 
     # convert markdown to html
@@ -26,7 +26,7 @@ def entry_page(request, entry_name):
     if ef_content:
         ef_content_html = markdown2.markdown(ef_content)
     else:
-        return render(request, 'encyclopedia/404.html', status=404)
+        return render(request, 'encyclopedia/error.html', status=404)
 
     context = {
         'entry_title': entry_name,
