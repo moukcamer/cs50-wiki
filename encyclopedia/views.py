@@ -52,7 +52,7 @@ def search(request):
         )
 
 
-def random_page(request):
+def random(request):
     rand_entry_name = random.choice(util.list_entries())
     return redirect('entry_page', entry_name=rand_entry_name)
 
@@ -77,7 +77,7 @@ def new_page(request):
     return render(request, 'encyclopedia/new_page.html', context)
 
 
-def edit_page(request, entry_name):
+def edit(request, entry_name):
 
     if request.method == 'POST':
         form = EditPageForm(request.POST)
@@ -103,4 +103,4 @@ def edit_page(request, entry_name):
 
     context = {'form': form}
 
-    return render(request, 'encyclopedia/edit_page.html', context)
+    return render(request, 'encyclopedia/edit.html', context)
