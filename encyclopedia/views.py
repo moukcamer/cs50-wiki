@@ -11,7 +11,7 @@ class SearchForm(forms.Form):
     """ Form Class for Search Bar """
     title = forms.CharField(label='', widget=forms.TextInput(attrs={
       "class": "search",
-      "placeholder": "Search Qwikipedia"}))
+      "placeholder": "Search wikipedia"}))
 
 class CreateForm(forms.Form):
     """ Form Class for Creating New Entries """
