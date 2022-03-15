@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-(wptbcj9#e!k-wy108(ll43+o-8_5os4_j=ta&tuk(vm=*!*dh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -56,6 +56,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS':['*']
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
