@@ -1,10 +1,9 @@
-{% extends 'encyclopedia/layout.html' %}
 
-{% block title %}
-    Search results
-{% endblock %}
+
+{% extends 'layout.html' %}
 
 {% block body %}
+
     <h1>Search results.</h1>
     <ul>
         {% if search_results %}
@@ -15,4 +14,5 @@
             <h3>Sorry. Entry not found.</h3>
         {% endif %}
     </ul>
+
 {% endblock %}
