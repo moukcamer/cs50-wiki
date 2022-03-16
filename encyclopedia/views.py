@@ -1,22 +1,17 @@
-import os
-import random
-import markdown2
-
-from django.shortcuts import render, redirect
-
-from . import util
-from .forms import NewPageForm, EditPageForm
+from socket import fromshare
+from django.shortcuts import render
+from django.http import HttpResponse
+from . import util 
+from random import choices
 
 
 def index(request):
-    """Main page."""
-
-    context = {
-        "entries": util.list_entries()
-    }
-
-    return render(request, "encyclopedia/index.html", context)
-
+    
+    """ Home Page on Site, displays all available entries """
+    return render(request, "encyclopedia/index.html", {
+        "entries": util.list_entries(),
+    
+    })
 
 def entry(request, entry_name):
     """Render entry page."""
