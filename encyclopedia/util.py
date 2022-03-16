@@ -36,13 +36,3 @@ def get_entry(title):
     except FileNotFoundError:
         return None
 
-
-def search_entry(keyword):
-    """Search entries."""
-
-    result = []
-    for entry in list_entries():
-        if re.findall(keyword, entry, re.IGNORECASE):
-            result.append(entry)
-
-    return result
