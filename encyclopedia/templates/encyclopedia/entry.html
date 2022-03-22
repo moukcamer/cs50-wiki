@@ -1,10 +1,14 @@
-{% extends 'encyclopedia/layout.html' %}
 
-{% block title %}
-    Wiki. {{ entry_title }}
-{% endblock %}
+ {% extends 'encyclopedia/layout.html' %}
 
-{% block body %}
-    {{ entry_content|safe }}
-    <a href="{% url 'edit' entry_name=entry_title %}">Edit.</a>
-{% endblock %}
+ {% block title %}
+     {{title}}
+ {% endblock %}
+ 
+ {% block body %}
+ 
+     {{entry|safe}}
+ 
+     <a class="btn btn-primary" href="{% url 'edit' title=title %}">Edit Page</a>
+ 
+ {% endblock %}
