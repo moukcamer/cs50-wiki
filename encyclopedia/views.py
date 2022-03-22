@@ -1,4 +1,5 @@
 import random
+from random import choice
 from django import forms
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -11,7 +12,7 @@ class SearchForm(forms.Form):
     """ Form Class for Search Bar """
     title = forms.CharField(label='', widget=forms.TextInput(attrs={
       "class": "search",
-      "placeholder": "Search Qwikipedia"}))
+      "placeholder": "Search wikipedia"}))
 
 class CreateForm(forms.Form):
     """ Form Class for Creating New Entries """
@@ -163,11 +164,4 @@ def edit(request, title):
           })
 
 def random(request):
-    """ Takes user to a random encyclopedia entry """
-
-    # Get list of titles, pick one at random:
-    titles = util.list_entries()
-    title = random.choice(titles)
-
-    # Redirect to selected page:
-    return redirect(reverse('entry', args=[title])
+     return entry(request,choice( util.list_entries()))
