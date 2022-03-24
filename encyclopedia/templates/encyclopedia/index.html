@@ -6,12 +6,15 @@
 {% endblock %}
 
 {% block body %}
-<h1>All Pages</h1>
+<h1>Welcome to Wikipedia</h1>
 
-        
+<p> Wikipedia is a collective encyclopedia project online, universal, multilingual and operating on the principle of the wiki. </p>
+
+<h2>All Pages</h2>
+
     <ul>
         {% for entry in entries %}
-        <li><a href="/wiki/{{ entry }}">{{ entry }}</a></li>
+            <li><a href="{% url 'entry' title=entry %}">{{ entry }}</a></li>
         {% endfor %}
     </ul>
 
